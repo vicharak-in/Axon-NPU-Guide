@@ -4,9 +4,9 @@ This repository contains guide on how to setup toolkits to use NPU present on Ax
 
 ### How to convert your custom CNN model to rknn format to run it on NPU
 To run CNN models on NPU using rknn-toolkit-lite2, first we need to have models in model.rknn format.  
-This conversion needs to be first done on user's personal computer having amd64 based cpu. Below is walkthrough to setup rknn-toolkit2(that can be used for model conversion), and convert your model to .rknn format.  
+This conversion needs to be first done on user's personal computer having amd64/x86 based cpus. Below is walkthrough to setup rknn-toolkit2(that can be used for model conversion), and convert your model to .rknn format.  
 
-#### Follow below steps to install rknn toolkit 2 on your PC having linux on it    
+#### Follow below steps to install rknn toolkit 2 on your PC (x86/amd64 ) having linux os on it  
 - clone the rknn-toolkit2 repo https://github.com/airockchip/rknn-toolkit2.git   
 command: `git clone https://github.com/airockchip/rknn-toolkit2.git`
 - go to directory rknn-toolkit2/rknn-toolkit2/packages  
@@ -57,7 +57,9 @@ ret = rknn.export_rknn(rknn_model_path)
 ```
 
 Now after you have your model.rknn file, then you need to have rknn-toolkit-lite2 on your Axon SBC.  
+
 #### Follow below steps to setup rknn-toolkit-lite2 on Axon.
+#### All of these steps would be performed on top of Axon only
 
 - clone the rknn-toolkit2 repo https://github.com/airockchip/rknn-toolkit2.git   
 command: `git clone https://github.com/airockchip/rknn-toolkit2.git`
