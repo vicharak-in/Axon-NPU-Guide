@@ -7,6 +7,17 @@ To use NPU and other resources on axon at full capacity (or maximum frequencies)
 sudo bash max_freq.sh
 ```
 
+### LLM Benchmarks on Axon
+
+|Model                          | quantization type | tokens per second |
+| :---:                         | :---:             | :---:             |
+| Llama3.2-1B                   | w8a8              | 21.23             |
+| Llama3.2-3B                   | w8a8              | 8.51              |
+| Qwen2-VL-2B                   | w8a8              | 16.38             |
+| DeepSeek-R1-Distill-Qwen-1.5B | w8a8              | 16.67             |
+| DeepSeek-R1-Distill-Qwen-1.5B | None              | 9.19              |
+
+
 ### How to convert your custom CNN model to rknn format to run it on NPU
 To run CNN models on NPU using rknn-toolkit-lite2, first we need to have models in model.rknn format.  
 This conversion needs to be first done on user's personal computer having amd64/x86 based cpus. Below is walkthrough to setup rknn-toolkit2(that can be used for model conversion), and convert your model to .rknn format.  
