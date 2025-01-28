@@ -16,6 +16,8 @@ sudo bash max_freq.sh
 | Qwen2-VL-2B                   | w8a8              | 16.38             |
 | DeepSeek-R1-Distill-Qwen-1.5B | w8a8              | 16.67             |
 | DeepSeek-R1-Distill-Qwen-1.5B | None              | 9.19              |
+| TinyLlama-1.1B                | w8a8              | 24.47             |
+| MiniCPM3-4B                   | w8a8              | 5.78              |
 
 
 ### How to convert your custom CNN model to rknn format to run it on NPU
@@ -371,3 +373,4 @@ int main(int argc, char **argv)
 }
 
 ```
+
