@@ -22,25 +22,47 @@ sudo bash max_freq.sh
 
 ### How to convert your custom CNN model to rknn format to run it on NPU
 To run CNN models on NPU using rknn-toolkit-lite2, first we need to have models in model.rknn format.  
-This conversion needs to be first done on user's personal computer having amd64/x86 based cpus. Below is walkthrough to setup rknn-toolkit2(that can be used for model conversion), and convert your model to .rknn format.  
+This conversion can be done on user's personal computer having amd64/x86 based cpus, or on Axon also. But it is recommended to be done on PC for faster quantization of models.  
 
-#### Follow below steps to install rknn toolkit 2 on your PC (x86/amd64 ) having linux os on it  
+Below is walkthrough to setup rknn-toolkit2(that can be used for model conversion), and convert your model to .rknn format. This toolkit is either to be installed on your PC(recommended) or Axon  
+
+#### Follow below steps to install rknn toolkit 2 on your PC (x86/amd64) having linux os on it  
 - clone the rknn-toolkit2 repo https://github.com/airockchip/rknn-toolkit2.git   
 command: `git clone https://github.com/airockchip/rknn-toolkit2.git`
-- go to directory rknn-toolkit2/rknn-toolkit2/packages  
-command: `cd rknn-toolkit2/rknn-toolkit2/packages`
+- go to directory rknn-toolkit2/rknn-toolkit2/packages/x86_64  
+command: `cd rknn-toolkit2/rknn-toolkit2/packages/x86_64`
 - install all requirements needed to install rknn-toolkit2 as per your python version from given requirements*.txt files. For eg, if you have python3.10 then use below command   
 command: `pip install -r requirements_cp310-2.2.0.txt`
 - from given whl files install the whl file as per your environment. For eg, if you have python3.10 then use below command   
 command: `pip install rknn_toolkit2-2.2.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl`
 
 
-Now you have rknn-toolkit2 on your PC. You can explore rknn-toolkit2/rknn-toolkit2/examples from the same repo for use cases. Also there are many more examples on [rknn model zoo repo](https://github.com/airockchip/rknn_model_zoo) for various computer vision related tasks.  
+#### Follow below steps to install rknn toolkit 2 on your Axon (or any other arm cpu based PC) having linux os on it   
+- (optional) you may install all below libraries on [python virtual environment](https://docs.python.org/3/library/venv.html) as mostly recommended.   
+   Commands to create and activate/deactivate:  
+    ```bash
+    python3 -m venv env_rknn
+    source env_rknn/bin/activate
 
-To learn more about rknn-toolkit2, you can follow api reference of rknn-toolkit2 [here](https://github.com/airockchip/rknn-toolkit2/blob/master/doc/03_Rockchip_RKNPU_API_Reference_RKNN_Toolkit2_V2.2.0_EN.pdf)
+    # it can be later deactivated after getting task done by entering below command
+    deactivate
+    ```
+- setuptools maybe required to install few packages of some version. Install it using following  
+command: `pip install setuptools`
+- clone the rknn-toolkit2 repo https://github.com/airockchip/rknn-toolkit2.git   
+command: `git clone https://github.com/airockchip/rknn-toolkit2.git`
+- go to directory rknn-toolkit2/rknn-toolkit2/packages/arm64  
+command: `cd rknn-toolkit2/rknn-toolkit2/packages/arm64`
+- install all requirements needed to install rknn-toolkit2 as per your python version from given arm64_requirements*.txt files. For eg, if you have python3.10 then use below command   
+command: `pip install -r arm64_requirements_cp310-2.2.0.txt`
+- from given whl files install the whl file as per your environment. For eg, if you have python3.10 then use below command   
+command: `pip install rknn_toolkit2-2.3.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl`
 
+To learn more about rknn-toolkit2, you can follow api reference of rknn-toolkit2 [here](https://github.com/airockchip/rknn-toolkit2/blob/master/doc/03_Rockchip_RKNPU_API_Reference_RKNN_Toolkit2_V2.3.0_EN.pdf)
 
-To convert your particular CNN model to .rknn format first export it to onnx format.  
+Now you have rknn-toolkit2 on your PC. You can explore rknn-toolkit2/rknn-toolkit2/examples from the same repo for use cases. Also there are many more examples on [rknn model zoo repo](https://github.com/airockchip/rknn_model_zoo) for various computer vision related tasks.   
+
+To convert your particular CNN model to .rknn format, it is easier to first export it to onnx format.  
 Then following below code example you can convert your model.onnx to model.rknn that can be used on axon for running the model.  
 ```python
 from rknn.api import RKNN
