@@ -166,10 +166,10 @@ outputs = rknn_lite.inference(inputs=[image])
 #### Step 1: Model Conversion on PC having x86/amd64 linux on it.
 
 Follow below steps to first install the required libraries to convert the model inn rkllm format:
-- clone the rknn-toolkit2 repo https://github.com/airockchip/rknn-llm.git   
+- clone the rknn-llm repo https://github.com/airockchip/rknn-llm.git   
 command: `git clone https://github.com/airockchip/rknn-llm.git`
-- go to directory rknn-llm/rkllm-toolkit/packages  
-command: `cd rknn-llm/rkllm-toolkit/packages`
+- go to directory rknn-llm/rkllm-toolkit  
+command: `cd rknn-llm/rkllm-toolkit`
 - from given whl files install the whl file as per your environment (you may also create python virtual environment and install libraries there). For eg, if you have python3.10 then use below command   
 command: `pip install rkllm_toolkit-1.1.4-cp310-cp310-linux_x86_64.whl`
 
