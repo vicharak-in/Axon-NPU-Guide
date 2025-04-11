@@ -31,12 +31,23 @@ echo userspace > /sys/devices/system/cpu/cpufreq/policy6/scaling_governor
 echo 2352000 > /sys/devices/system/cpu/cpufreq/policy6/scaling_setspeed
 cat /sys/devices/system/cpu/cpufreq/policy6/scaling_cur_freq
 
+kernel_version=$(uname -r)
+kernel_major=$(echo "$kernel_version" | cut -d. -f1)
+
 echo "GPU available frequencies:"
-cat /sys/class/devfreq/fb000000.gpu/available_frequencies
-echo "Fix GPU max frequency:"
-echo userspace > /sys/class/devfreq/fb000000.gpu/governor
-echo 1000000000 > /sys/class/devfreq/fb000000.gpu/userspace/set_freq
-cat /sys/class/devfreq/fb000000.gpu/cur_freq
+if [ "$kernel_major" -eq 5 ]; then
+    cat /sys/class/devfreq/fb000000.gpu/available_frequencies
+    echo "Fix GPU max frequency:"
+    echo userspace > /sys/class/devfreq/fb000000.gpu/governor
+    echo 1000000000 > /sys/class/devfreq/fb000000.gpu/userspace/set_freq
+    cat /sys/class/devfreq/fb000000.gpu/cur_freq
+elif [ "$kernel_major" -ge 6 ]; then
+    cat /sys/class/devfreq/fb000000.gpu-panthor/available_frequencies
+    echo "Fix GPU max frequency:"
+    echo userspace > /sys/class/devfreq/fb000000.gpu-panthor/governor
+    echo 1000000000 > /sys/class/devfreq/fb000000.gpu-panthor/userspace/set_freq
+    cat /sys/class/devfreq/fb000000.gpu-panthor/cur_freq
+fi    
 
 echo "DDR available frequencies:"
 cat /sys/class/devfreq/dmc/available_frequencies
