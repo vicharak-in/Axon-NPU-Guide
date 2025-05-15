@@ -1,5 +1,7 @@
 #!/system/bin/sh
 
+
+# Disabling state1 may cause heating issue, prefer doing it when you have active cooling system
 echo 1 > /sys/devices/system/cpu/cpu0/cpuidle/state1/disable
 echo 1 > /sys/devices/system/cpu/cpu1/cpuidle/state1/disable
 echo 1 > /sys/devices/system/cpu/cpu2/cpuidle/state1/disable
@@ -8,6 +10,7 @@ echo 1 > /sys/devices/system/cpu/cpu4/cpuidle/state1/disable
 echo 1 > /sys/devices/system/cpu/cpu5/cpuidle/state1/disable
 echo 1 > /sys/devices/system/cpu/cpu6/cpuidle/state1/disable
 echo 1 > /sys/devices/system/cpu/cpu7/cpuidle/state1/disable
+
 
 echo "NPU available frequencies:"
 cat /sys/class/devfreq/fdab0000.npu/available_frequencies
