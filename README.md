@@ -9,7 +9,7 @@ sudo bash max_freq.sh
 
 ### LLM Benchmarks on Axon
 
-|Model                          | quantization type | tokens per second |
+| Model                         | quantization type | tokens per second |
 | :---:                         | :---:             | :---:             |
 | Llama3.2-1B                   | w8a8              | 21.23             |
 | Llama3.2-3B                   | w8a8              | 8.51              |
@@ -19,6 +19,18 @@ sudo bash max_freq.sh
 | TinyLlama-1.1B                | w8a8              | 24.47             |
 | MiniCPM3-4B                   | w8a8              | 5.78              |
 
+
+### CNN / ML Models' Benchmarks on Axon
+
+| Model        | data type | speed |
+| :---:        | :---:     | :---: |
+| Yolo11s      | int8      | 61.04 FPS |
+| Yolo11n-pose | fp16      | 45.80 FPS |
+| Whisper-base speech-to-text | fp16 | 0.215 RTF |
+| MMS-TTS text-to-speech | fp16 | 0.069 RTF |   
+
+*these bechmarks are performed at max frequency of all compute units in multi-threaded program, utilizing multiple NPU cores, in C++   
+Several other models' example can be found [here](https://github.com/airockchip/rknn_model_zoo/) (follow benchmarks and methods for rk3588 chipset).
 
 ### How to convert your custom CNN model to rknn format to run it on NPU
 To run CNN models on NPU using rknn-toolkit-lite2, first we need to have models in model.rknn format.  
