@@ -62,7 +62,7 @@ def main():
     if len(sys.argv) < 3:
         print("Usage: python prune_postprocess_from_yolo.py <input.onnx> <output.onnx>")
         sys.exit(1)
-    prune_above_branch_concats(sys.argv[1], sys.argv[2])
+    prune_postprocess(sys.argv[1], sys.argv[2])
 
 if __name__ == "__main__":
     main()
