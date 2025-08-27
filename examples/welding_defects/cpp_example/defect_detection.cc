@@ -340,21 +340,8 @@ cv::Mat expand2square(const cv::Mat& img, const cv::Scalar& background_color) {
 
 DefectDetection::DefectDetection(const std::string& modelPath_):modelPath(modelPath_), 
                         modelSize(640, 640), ctx(0), inferT(3), postT(3), streamT(1), syncedQ(0, 50),
-                        skeleton{
-                            {15, 13}, {13, 11}, {16, 14}, {14, 12}, {11, 12},
-                            {5, 11}, {6, 12}, {5, 6}, {5, 7}, {6, 8},
-                            {7, 9}, {8, 10}, {1, 2}, {0, 1}, {0, 2},
-                            {1, 3}, {2, 4}, {3, 5}, {4, 6}},
                         labels{
-                            "person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat", "traffic light",
-                            "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow",
-                            "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee",
-                            "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard",
-                            "tennis racket", "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple",
-                            "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "sofa",
-                            "pottedplant", "bed", "diningtable", "toilet", "tvmonitor", "laptop", "mouse", "remote", "keyboard",
-                            "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase",
-                            "scissors", "teddy bear", "hair drier", "toothbrush"
+                            "Defect", "Welding Line", "Workpiece", "Porosity"
                         } {
     ;
 }
