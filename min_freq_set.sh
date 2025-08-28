@@ -1,4 +1,4 @@
-#!/system/bin/bash
+#!/usr/bin/bash
 
 echo "Enable CPU idle state1 for all cores:"
 for i in $(seq 0 7); do
