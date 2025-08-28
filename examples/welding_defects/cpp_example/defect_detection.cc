@@ -6,6 +6,25 @@
 #include <set> 
 #include <numeric>
 #include "defect_detection.h"
+#include <cstdint>
+#include <cmath>
+
+static inline uint16_t float32_to_float16(float value) {
+    uint32_t f = *((uint32_t*)&value);
+    uint32_t sign = (f >> 31) & 0x1;
+    int32_t exp = ((f >> 23) & 0xFF) - 127 + 15;
+    uint32_t mant = f & 0x7FFFFF;
+
+    if (exp <= 0) {
+        if (exp < -10) return (uint16_t)(sign << 15);
+        mant = (mant | 0x800000) >> (1 - exp);
+        return (uint16_t)((sign << 15) | (mant >> 13));
+    } else if (exp >= 31) {
+        return (uint16_t)((sign << 15) | 0x7C00);
+    }
+
+    return (uint16_t)((sign << 15) | (exp << 10) | (mant >> 13));
+}
 
 static int read_data_from_file(const char *path, char **out_data)
 {
@@ -352,7 +371,7 @@ cv::Mat DefectDetection::preprocess(const cv::Mat& image) {
     cv::Scalar background_color(56, 56, 56);
     cv::resize(img, img, rSize, 0, 0, cv::INTER_CUBIC);
     cv::Mat squareImg = expand2square(img, background_color);
-
+    squareImg.convertTo(squareImg, CV_32FC3, 1.0 / 255.0);
     return squareImg;
 }
 
@@ -364,9 +383,9 @@ void DefectDetection::inference(cv::Mat& frame, cv::Mat& image) {
     memset(inputs, 0, sizeof(inputs));
 
     inputs[0].index = 0;
-    inputs[0].type  = RKNN_TENSOR_UINT8;
+    inputs[0].type  = RKNN_TENSOR_FLOAT16;
     inputs[0].fmt   = RKNN_TENSOR_NHWC;
-    inputs[0].size  = modelWidth * modelHeight * modelChannel;
+    inputs[0].size  = modelWidth * modelHeight * modelChannel * 2;
     inputs[0].buf   = image.data;
 
     ret = rknn_inputs_set(ctx, io_num.n_input, inputs);
@@ -557,9 +576,12 @@ void DefectDetection::inferenceWorker(int workerId) {
     rknn_input inputs[io_num.n_input];
     memset(inputs, 0, sizeof(inputs));
     inputs[0].index = 0;
-    inputs[0].type  = RKNN_TENSOR_UINT8;
+    inputs[0].type  = RKNN_TENSOR_FLOAT16;
     inputs[0].fmt   = RKNN_TENSOR_NHWC;
-    inputs[0].size  = modelWidth * modelHeight * modelChannel;
+    inputs[0].size  = modelWidth * modelHeight * modelChannel * 2;
+
+    std::vector<uint16_t> img_fp16(1228800);
+    float* fptr;
 
     std::unique_lock<std::mutex> lockInfer(inferMtx, std::defer_lock), lockPost(postMtx, std::defer_lock);
     
@@ -581,7 +603,12 @@ void DefectDetection::inferenceWorker(int workerId) {
         
         rknn_output* outputs = item->outputs;
 
-        inputs[0].buf = item->processedFrame.data;
+        fptr = (float*)item->processedFrame.data;
+        for(size_t i = 0; i < 1228800; ++i) {
+            img_fp16[i] = float32_to_float16(fptr[i]);
+        }
+
+        inputs[0].buf = img_fp16.data();
 
         ret = rknn_inputs_set(ctxI, io_num.n_input, inputs);
         
