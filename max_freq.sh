@@ -1,4 +1,4 @@
-#!/system/bin/sh
+#!/usr/bin/bash
 
 
 # Disabling state1 may cause heating issue, prefer doing it when you have active cooling system
