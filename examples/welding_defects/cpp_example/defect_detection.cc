@@ -716,8 +716,8 @@ void DefectDetection::streamer() {
             frameNum = 0;
             std::cout << "\nFPS: " << 20000.0/elapsed.count() << std::endl;
         }
-        // cv::imshow("processed stream", frame);
-        // cv::waitKey(1);
+        cv::imshow("processed stream", frame);
+        cv::waitKey(1);
         frame.release();
     }
     streamT.stop(0);
