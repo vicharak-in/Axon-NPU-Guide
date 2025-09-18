@@ -42,19 +42,21 @@ def add_post_nodes(input_path, output_path, num_classes=80, verbose=True):
             reduce_node = gs.Node(
                 op="ReduceSum",
                 name=out.name + "_reducesum_node",
-                inputs=[sig_out, axes_tensor],
+                inputs=[sig_out],
                 outputs=[reduce_out],
-                attrs={"keepdims": 1},
+                attrs={"axes":[1], "keepdims": 1},
             )
             graph.nodes.append(reduce_node)
 
+            min_tensor = gs.Constant(name="clip_min", values=np.array(0.0, dtype=np.float32))
+            max_tensor = gs.Constant(name="clip_max", values=np.array(1.0, dtype=np.float32))
             clip_out = gs.Variable(name=out.name + "_clip", dtype=np.float32, shape=sum_shape)
             clip_node = gs.Node(
                 op="Clip",
                 name=out.name + "_clip_node",
-                inputs=[reduce_out],
+                inputs=[reduce_out, min_tensor, max_tensor],
                 outputs=[clip_out],
-                attrs={"min": 0.0, "max": 1.0},
+                attrs={},
             )
             graph.nodes.append(clip_node)
 
