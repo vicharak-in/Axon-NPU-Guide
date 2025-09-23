@@ -18,9 +18,9 @@ def re_export_onnx(input_onnx_path, output_rknn_path=None, num_classes=80):
 
     export_rknn_from_static_onnx(intermediate_onnx_path2, output_rknn_path)
 
-    if os.path.exits(intermediate_onnx_path):
+    if os.path.exists(intermediate_onnx_path):
         os.remove(intermediate_onnx_path)
-    if os.path.exits(intermediate_onnx_path2):
+    if os.path.exists(intermediate_onnx_path2):
         os.remove(intermediate_onnx_path2)
 
 
