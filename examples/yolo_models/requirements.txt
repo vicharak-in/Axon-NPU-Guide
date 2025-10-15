@@ -1,0 +1,5 @@
+ultralytics
+onnx==1.16.1
+onnxscript
+onnx_graphsurgeon
+rknn-toolkit2
