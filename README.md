@@ -97,7 +97,19 @@ quantization_flag = True
 # dataset.txt will contain images(in jpg format) name that should be present in the same directory as this code
 dataset_path = 'path_to_dataset/dataset.txt'  #this is required only if quantization is performed
 
-ret = rknn.build(do_quantization=quantization_flag, dataset=dataset_path)
+
+"""
+next you need to build the model which may take following parameters
+- do_quantization [optional]: set True if you want to do int8 quantization, default value is False
+- dataset [optional]: if do_quantization is set true, pass the path of dataset.txt as explained above 
+- rknn_batch_size [optional]: if you want to do inference in batches pass batch_size in this, default is 1
+- auto_hybrid [optional]: if quantization is being done, set this value to true for hybrid quantization to reduce accuracy loss,
+               but this may make model slower than fully quantized, default value is False
+"""
+ret = rknn.build(do_quantization=quantization_flag,
+                  dataset=dataset_path,
+                  rknn_batch_size=batch_size,
+                  auto_hybrid)
 
 if ret != 0:
     print('Build model failed')
