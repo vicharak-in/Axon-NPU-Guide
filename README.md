@@ -100,7 +100,7 @@ dataset_path = 'path_to_dataset/dataset.txt'  #this is required only if quantiza
 
 """
 next you need to build the model which may take following parameters
-- do_quantization [optional]: set True if you want to do int8 quantization, default value is False
+- do_quantization [optional]: set True if you want to do int8 quantization else set False, default value is True
 - dataset [optional]: if do_quantization is set true, pass the path of dataset.txt as explained above 
 - rknn_batch_size [optional]: if you want to do inference in batches pass batch_size in this, default is 1
 - auto_hybrid [optional]: if quantization is being done, set this value to true for hybrid quantization to reduce accuracy loss,
