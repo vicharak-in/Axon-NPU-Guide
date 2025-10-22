@@ -176,8 +176,20 @@ if ret != 0:
     exit(ret)
 
 
-# to finally perform inference, this will give output in format according to particular cnn model
-outputs = rknn_lite.inference(inputs=[image])
+"""
+to finally perform inference, this will give output in format according to particular cnn model
+inputs [required]: takes inputs as a list (list of single element in case of passing an image)
+data_format [optional]: takes the format in case of 4 dims image input,
+                        default value is "nhwc" means (batch, height, width, channel)
+                        if input is passed in channel first format, one must set it to "nchw"
+input_pass_through [optional]: pass through flag, takes value as a list (of 1 or 0) of length of inputs parameter list
+                           if value at a position is 1, then that input wouldn't be normalized before passing to inference
+                           else it would be normalized using the value passed to in rknn.config while exporting.
+                           by default values are normalized as per parameters set while exporting rknn model
+"""
+outputs = rknn_lite.inference(inputs=[image],
+                              data_format="nhwc",
+                              inputs_pass_through=None)
 
 ```  
 
