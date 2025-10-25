@@ -153,7 +153,6 @@ class Mobilnet:
         try:
             while True:
                 ret, frame = cap.read()
-                # time.sleep(1)
                 if not ret:
                     print("Input ended")
                     break
@@ -226,7 +225,4 @@ if __name__ == "__main__":
         input_width=224
     )
 
-    # start = time.time()
     model.run(input_path=args.input_path, export_type='stream')
-    # end = time.time()
-    # print(f"Total runtime: {end - start:.2f}s")
