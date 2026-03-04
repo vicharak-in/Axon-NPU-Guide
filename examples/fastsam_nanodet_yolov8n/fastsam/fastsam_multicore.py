@@ -2,11 +2,6 @@
 """
 FastSAM multicore benchmark — runs a single FastSAM model across all 3 NPU
 cores for maximum throughput on a live video stream.
-
-Architecture:
-  capture → preprocess (top-left letterbox 640, RGB) → SharedQueue (drop-oldest)
-  → 3 core workers (one RKNN instance per core) → raw output queue
-  → postprocess worker(s) (default 2, since post≈128ms) → display
 """
 
 import argparse
@@ -28,12 +23,7 @@ except ImportError:
 SENTINEL = object()
 WARMUP_SECONDS = 10.0
 
-
-# Shared Queue
-
 class DropOldestQueue:
-    """Thread-safe FIFO with drop-oldest overflow and efficient blocking get."""
-
     def __init__(self, maxlen: int):
         self._lock = threading.Lock()
         self._not_empty = threading.Condition(self._lock)
@@ -91,7 +81,6 @@ def print_stats(stats, warmup_end):
 
 
 # Preprocessing
-
 def letterbox_topleft(img, target_h, target_w):
     h, w = img.shape[:2]
     scale = min(target_h / h, target_w / w)
@@ -137,7 +126,6 @@ def _nms(boxes, scores, iou_thresh):
 
 
 # FastSAM postprocess
-
 def _fastsam_make_anchors(feat_sizes, strides):
     all_a, all_s = [], []
     for (h, w), stride in zip(feat_sizes, strides):
@@ -588,7 +576,7 @@ def main():
 
     qs = max(args.queue_size, 1)
     input_queue = DropOldestQueue(maxlen=qs)
-    raw_queue = queue.Queue(maxsize=qs * 2)  # slightly larger for 2 post workers
+    raw_queue = queue.Queue(maxsize=qs * 2)
 
     frame_slots = {}
     frame_lock = threading.Lock()
@@ -600,20 +588,18 @@ def main():
 
     threads = []
 
-    # Capture
     threads.append(threading.Thread(
         target=capture_worker, name="capture",
         args=(args.input, input_queue, frame_slots, frame_lock, qs * 4, shutdown),
     ))
 
-    # 3 core workers
     for i, rknn in enumerate(rknns):
         threads.append(threading.Thread(
             target=core_worker, name=f"core-{i}",
             args=(f"core-{i}", rknn, input_queue, raw_queue, shutdown),
         ))
 
-    # Postprocess workers (default 2)
+    # Postprocess workers
     for i in range(args.post_workers):
         threads.append(threading.Thread(
             target=post_worker, name=f"fsam-post-{i}",
@@ -624,7 +610,6 @@ def main():
                   stats, stats_lock, warmup_end, shutdown),
         ))
 
-    # Display
     disp_thread = threading.Thread(
         target=display_worker, name="display",
         args=(result_slot, slot_lock, shutdown),

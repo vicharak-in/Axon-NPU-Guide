@@ -37,15 +37,7 @@ WARMUP_SECONDS = 10.0
 
 class SharedTaskQueue:
     """Per-model deques with drop-oldest; get() returns the globally oldest task.
-
-    put(model_key, task) appends to the model's deque, dropping the oldest
-    item if the deque is full.
-
-    get(timeout) scans *all* model deques and returns the task with the
-    smallest frame_id (oldest-first priority).  Blocks with a condition
-    variable so core workers sleep efficiently when no work is available.
     """
-
     def __init__(self, model_keys: List[str], maxlen: int):
         self._lock = threading.Lock()
         self._not_empty = threading.Condition(self._lock)
@@ -59,7 +51,6 @@ class SharedTaskQueue:
             self._not_empty.notify()
 
     def get(self, timeout: float = 0.05) -> Optional[Tuple[str, dict]]:
-        """Return (model_key, task) for the globally oldest task, or None on timeout."""
         deadline = time.monotonic() + timeout
         with self._not_empty:
             while True:
@@ -82,7 +73,6 @@ class SharedTaskQueue:
                 self._not_empty.wait(timeout=remaining)
 
     def close(self):
-        """Wake all waiters so they can exit."""
         with self._not_empty:
             self._closed = True
             self._not_empty.notify_all()
@@ -654,8 +644,6 @@ def safe_put_sentinel(q: queue.Queue, count: int):
                 except queue.Empty:
                     pass
 
-
-# Thread workers
 def capture_worker(
     source,
     nano_input_wh: Tuple[int, int],
@@ -691,7 +679,7 @@ def capture_worker(
 
         # Shared 640 preprocess (YOLO + FastSAM share the same input)
         inp_640, meta_640 = preprocess_640_rgb(frame)
-        # NanoDet 416 preprocess
+
         inp_nano, meta_nano = preprocess_nano(frame, nano_w, nano_h)
 
         packet_base = {
@@ -1050,7 +1038,6 @@ def main():
     qs = max(args.queue_size, 1)
     shared_queue = SharedTaskQueue(["yolo", "nano", "fastsam"], maxlen=qs)
 
-    # Per-model raw output queues (inference -> postprocess)
     q_yolo_raw = queue.Queue(maxsize=qs)
     q_nano_raw = queue.Queue(maxsize=qs)
     q_fsam_raw = queue.Queue(maxsize=qs)
@@ -1060,7 +1047,6 @@ def main():
     frame_slots: Dict[int, np.ndarray] = {}
     frame_lock = threading.Lock()
 
-    # Display result slots (ordered pending buffer per model)
     result_slots = {
         "yolo": {"pending": {}, "next_id": 0},
         "nano": {"pending": {}, "next_id": 0},
@@ -1089,7 +1075,6 @@ def main():
               frame_slots, frame_lock, qs * 4, shutdown),
     ))
 
-    # 3 core workers (each has all 3 models, picks oldest task dynamically)
     for i, models in enumerate(core_models):
         threads.append(threading.Thread(
             target=core_worker, name=f"core-{i}",
@@ -1117,7 +1102,7 @@ def main():
                   stats, stats_lock, warmup_end, shutdown),
         ))
 
-    # FastSAM postprocess (2 workers by default)
+    # FastSAM postprocess
     for i in range(args.fastsam_post_workers):
         threads.append(threading.Thread(
             target=fastsam_post_worker, name=f"fsam-post-{i}",
@@ -1130,14 +1115,12 @@ def main():
                   stats, stats_lock, warmup_end, shutdown),
         ))
 
-    # Display
     disp_thread = threading.Thread(
         target=display_worker, name="display",
         args=(result_slots, slot_locks, shutdown),
         daemon=True,
     )
 
-    # start
     n_cores = len(core_models)
     print(f"\n[Pipeline] Dynamic scheduling: {n_cores} core workers, each with all 3 models")
     print(f"  Postprocess: YOLO={args.yolo_post_workers}  Nano={args.nano_post_workers}  FastSAM={args.fastsam_post_workers}")
