@@ -7,6 +7,10 @@ To use NPU and other resources on axon at full capacity (or maximum frequencies)
 sudo bash max_freq.sh
 ```
 
+Latest versions of RKNN Toolkit and RKNNRT can be found on [RockChip's public drive](https://meta.zbox.filez.com/v/link/view/ef37a9687973439f94f5b06837f12527)
+
+The password for the same is: **rknn**
+
 ### LLM Benchmarks on Axon
 
 | Model                         | quantization type | tokens per second |
@@ -431,4 +435,3 @@ int main(int argc, char **argv)
 }
 
 ```
-
