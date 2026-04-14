@@ -1,16 +1,10 @@
-"""
-convert_glpn_rknn.py
-GLPN-NYU → TorchScript .pt → ONNX → .rknn
-Run on PC (not on RK3588).
-Requires: torch, transformers, rknn-toolkit2, onnx==1.18.0
-"""
-
 import sys
-
+import onnx
 import cv2
 import numpy as np
 import torch
 from transformers import GLPNForDepthEstimation
+from rknn.api import RKNN
 
 # ─── CONFIG ──────────────────────────────────────────────────────────────────
 MODEL_ID = "vinvino02/glpn-nyu"
@@ -24,11 +18,6 @@ INPUT_W = 640
 
 # ─── WRAPPER ─────────────────────────────────────────────────────────────────
 class GLPNWrapper(torch.nn.Module):
-    """
-    Contract: input  = NCHW float32 in [-1, 1]
-              output = [1, H, W] float32 depth
-    """
-
     def __init__(self, model):
         super().__init__()
         self.model = model
@@ -85,15 +74,12 @@ def export_onnx():
             ONNX_MODEL,
             input_names=["pixel_values"],
             output_names=["predicted_depth"],
-            opset_version=12,  # RKNN supports up to opset 19; 12 is safest
+            opset_version=12,  
             do_constant_folding=True,
-            dynamic_axes=None,  # static shapes — RKNN requires this
+            dynamic_axes=None,  
         )
 
     print(f"Saved → {ONNX_MODEL}")
-
-    # Verify ONNX graph is valid
-    import onnx
 
     model_onnx = onnx.load(ONNX_MODEL)
     onnx.checker.check_model(model_onnx)
@@ -107,8 +93,6 @@ def export_rknn():
 
     rknn = RKNN(verbose=True)
 
-    # mean=0 std=1 → no normalisation inside RKNN.
-    # Input is already float32 [-1, 1] from our preprocess().
     rknn.config(
         mean_values=[[0.0, 0.0, 0.0]],
         std_values=[[1.0, 1.0, 1.0]],
@@ -118,7 +102,7 @@ def export_rknn():
     )
 
     print("--> load_onnx")
-    # input_size_list not needed — shape is embedded in the ONNX graph
+    
     ret = rknn.load_onnx(model=ONNX_MODEL)
     assert ret == 0, "load_onnx failed"
 
@@ -137,7 +121,6 @@ def export_rknn():
 # ─── STEP 4: PC SIMULATOR VERIFICATION ───────────────────────────────────────
 def verify_pc(image_path: str):
     print("\n=== Step 4: PC Simulator Verification ===")
-    from rknn.api import RKNN
 
     frame = cv2.imread(image_path)
     assert frame is not None, f"Cannot read {image_path}"
@@ -186,27 +169,24 @@ def verify_pc(image_path: str):
 
 # ─── SHARED HELPERS ──────────────────────────────────────────────────────────
 def preprocess_base(frame_bgr: np.ndarray) -> tuple[np.ndarray, tuple]:
-    """Common resize + normalise. Returns HWC float32 [-1,1] + original size."""
     h, w = frame_bgr.shape[:2]
     img = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
     img = cv2.resize(img, (INPUT_W, INPUT_H), interpolation=cv2.INTER_AREA)
     img = img.astype(np.float32) / 255.0
     img = (img - 0.5) / 0.5
-    return img, (w, h)  # HWC float32 [-1, 1]
+    return img, (w, h)
 
 
 def preprocess_pytorch(frame_bgr: np.ndarray) -> tuple[np.ndarray, tuple]:
-    """HWC → NCHW float32 for PyTorch / TorchScript."""
     img, original_size = preprocess_base(frame_bgr)
-    img = np.transpose(img, (2, 0, 1))  # HWC → CHW
-    img = np.expand_dims(img, axis=0)  # → NCHW [1, 3, H, W]
+    img = np.transpose(img, (2, 0, 1))
+    img = np.expand_dims(img, axis=0)
     return np.ascontiguousarray(img), original_size
 
 
 def preprocess_rknn(frame_bgr: np.ndarray) -> tuple[np.ndarray, tuple]:
-    """HWC → NHWC float32 for rknn.inference(data_format='nhwc')."""
     img, original_size = preprocess_base(frame_bgr)
-    img = np.expand_dims(img, axis=0)  # HWC → NHWC [1, H, W, 3]
+    img = np.expand_dims(img, axis=0)
     return np.ascontiguousarray(img), original_size
 
 

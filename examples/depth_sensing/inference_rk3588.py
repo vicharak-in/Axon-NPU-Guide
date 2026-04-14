@@ -1,9 +1,3 @@
-"""
-inference_rk3588.py
-Run GLPN depth estimation on RK3588 using rknnlite.
-Install on device: pip install rknn_toolkit_lite2
-"""
-
 import sys
 import requests
 import numpy as np
@@ -42,43 +36,29 @@ def download_image(url: str, save_path: str) -> np.ndarray:
 
 # ─── PREPROCESS ──────────────────────────────────────────────────────────────
 def preprocess(frame_bgr: np.ndarray) -> tuple[np.ndarray, tuple]:
-    """
-    BGR uint8 [H, W, 3]
-        → resize
-        → RGB float32 [-1, 1]
-        → NHWC [1, H, W, 3]
-
-    rknn.inference() always expects NHWC numpy input.
-    The ONNX graph is NCHW internally; RKNN transposes it
-    automatically when data_format="nhwc" is passed.
-    """
     h, w          = frame_bgr.shape[:2]
     original_size = (w, h)
 
     img = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
     img = cv2.resize(img, (INPUT_W, INPUT_H), interpolation=cv2.INTER_AREA)
-    img = img.astype(np.float32) / 255.0      # [0, 1]
-    img = (img - 0.5) / 0.5                   # [-1, 1]
-    img = np.expand_dims(img, axis=0)          # HWC → NHWC [1, H, W, 3]
+    img = img.astype(np.float32) / 255.0
+    img = (img - 0.5) / 0.5
+    img = np.expand_dims(img, axis=0)
 
     return np.ascontiguousarray(img), original_size
 
 
 # ─── INFERENCE ───────────────────────────────────────────────────────────────
 def infer(x_nhwc: np.ndarray) -> np.ndarray:
-    """
-    Input:  NHWC float32 [1, 480, 640, 3] in [-1, 1]
-    Output: depth float32 [480, 640]
-    """
     outputs = rknn.inference(inputs=[x_nhwc], data_format="nhwc")
     out     = outputs[0]
 
     print(f"Raw output shape: {out.shape}  dtype: {out.dtype}")
 
     if out.ndim == 4:
-        out = out[0]   # remove batch → [C or 1, H, W]
+        out = out[0]
     if out.ndim == 3:
-        out = out[0]   # remove channel/pred dim → [H, W]
+        out = out[0]
 
     print(f"Depth range: min={out.min():.4f}  max={out.max():.4f}")
     return out.astype(np.float32)
@@ -86,10 +66,6 @@ def infer(x_nhwc: np.ndarray) -> np.ndarray:
 
 # ─── POSTPROCESS ─────────────────────────────────────────────────────────────
 def postprocess(depth: np.ndarray, original_size: tuple) -> np.ndarray:
-    """
-    Upscale to original size, normalise to uint8, apply Inferno colormap.
-    np.clip guards against bicubic overshoot producing banding artifacts.
-    """
     depth = cv2.resize(depth, original_size, interpolation=cv2.INTER_CUBIC)
 
     d_min, d_max = depth.min(), depth.max()
