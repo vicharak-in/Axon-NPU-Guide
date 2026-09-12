@@ -36,6 +36,31 @@ The password for the same is: **rknn**
 *these bechmarks are performed at max frequency of all compute units in multi-threaded program, utilizing multiple NPU cores, in C++   
 Several other models' example can be found [here](https://github.com/airockchip/rknn_model_zoo/) (follow benchmarks and methods for rk3588 chipset).
 
+### YOLO Object Detection: Speed vs Accuracy on Axon
+
+INT8 YOLO models on the NPU (all 3 cores), with COCO accuracy for each input size.
+
+| Model   | input | NPU throughput¹ | COCO mAP50-95, INT8 (NPU) | COCO mAP50-95, FP32 (CPU)² | person AP, INT8 |
+| :---:   | :---: | :---:           | :---:                     | :---:                      | :---:           |
+| Yolo11s³ | 640  | 85.1 FPS        | 45.6                      | -                          | 59.4            |
+| Yolo11n | 640   | 161.7 FPS       | 37.8                      | 39.3                       | 52.0            |
+| Yolo11n | 480   | 279.4 FPS       | 35.3                      | 36.0                       | 47.9            |
+| Yolo11n | 320   | 557.1 FPS       | 28.6                      | 29.3                       | 39.7            |
+| Yolov8n | 640   | 199.4 FPS       | 35.9                      | 37.3                       | 51.2            |
+| Yolov8n | 480   | 329.6 FPS       | 34.0                      | 34.8                       | 47.6            |
+| Yolov8n | 320   | 648.9 FPS       | 28.0                      | 28.5                       | 40.1            |
+
+With the [object_detection_cpp](examples/object_detection_cpp) example (CPU decode and resize, on-screen output), `yolo11s_i8.rknn` runs at 73.5 FPS with the default 3 inference workers and 77.2 FPS with 6.
+
+1. C++ pipeline with a zero-copy input path: MPP hardware H.264 decode, RGA resize/letterbox written straight into NPU input memory (DMA-BUF, no CPU copy); outputs read with `rknn_outputs_get`. RKNN contexts pinned round-robin to the 3 NPU cores (9 workers, 6 for Yolo11s). 768x432 video, 3000-9000 frames, post-processing and NMS included. The NPU is 93-98% busy in every row.
+2. The same models before quantization (ONNX on the CPU with onnxruntime) with identical pre/post-processing, so the gap to the INT8 column is the cost of quantization. At 640 these are within 0.2 of Ultralytics' published mAP (39.5 / 37.3).
+3. `yolo11s_i8.rknn` from [object_detection_cpp](examples/object_detection_cpp). The other models are Ultralytics weights exported with the rknn_model_zoo 9-output detection head and quantized with rknn-toolkit2 2.3.2 on 62 calibration images.
+
+COCO val2017 (5000 images), Ultralytics-style evaluation: square letterbox, conf 0.001, NMS IoU 0.7, up to 300 detections, scored with pycocotools.
+Setup: Axon 8 GB, Ubuntu 24.04, kernel 6.1.75-axon, RKNPU driver 0.9.8, librknnrt 2.3.2, `max_freq.sh`, 12 V PD supply, passive cooling (peak 63 °C, no throttling), desktop idle.
+
+*Benchmarks contributed by [Visomni](https://github.com/visomni).*
+
 ### How to convert your custom CNN model to rknn format to run it on NPU
 To run CNN models on NPU using rknn-toolkit-lite2, first we need to have models in model.rknn format.  
 This conversion can be done on user's personal computer having amd64/x86 based cpus, or on Axon also. But it is recommended to be done on PC for faster quantization of models.  
