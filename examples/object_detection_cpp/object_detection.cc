@@ -271,7 +271,7 @@ static int process_fp32(float *box_tensor, float *score_tensor, float *score_sum
 
 rknn_output* getRKNNOutput(bool isQuant, size_t n_output, rknn_tensor_attr* output_attrs) {
     rknn_output* outputs = (rknn_output*)malloc(n_output * sizeof(rknn_output));
-    memset(outputs, 0, sizeof(outputs));
+    memset(outputs, 0, n_output * sizeof(rknn_output));
     for (int i = 0; i < n_output; i++) {
         outputs[i].index = i;
         outputs[i].want_float = !isQuant;
@@ -283,8 +283,8 @@ rknn_output* getRKNNOutput(bool isQuant, size_t n_output, rknn_tensor_attr* outp
     return outputs;
 }
 
-void freeRKNNOutput(rknn_output* rknnOutput) {
-    for(int i=0; i<4; ++i) free(rknnOutput[i].buf);
+void freeRKNNOutput(rknn_output* rknnOutput, size_t n_output) {
+    for(int i=0; i<n_output; ++i) free(rknnOutput[i].buf);
     free(rknnOutput);
     rknnOutput = nullptr;
     return;
@@ -339,7 +339,7 @@ cv::Mat expand2square(const cv::Mat& img, const cv::Scalar& background_color) {
 }
 
 ObjectDetection::ObjectDetection(const std::string& modelPath_):modelPath(modelPath_), 
-                        modelSize(640, 640), ctx(0), inferT(3), postT(3), streamT(1), syncedQ(0, 50),
+                        modelSize(640, 640), ctx(0), inferT(numInferenceWorkers), postT(numPostprocessWorkers), streamT(1), syncedQ(0, 50),
                         skeleton{
                             {15, 13}, {13, 11}, {16, 14}, {14, 12}, {11, 12},
                             {5, 11}, {6, 12}, {5, 6}, {5, 7}, {6, 8},
@@ -491,7 +491,7 @@ void ObjectDetection::postprocess(cv::Mat& frame, rknn_output* outputs, int iter
     item->iter = iter;
     syncedQ.push(*item);
 
-    freeRKNNOutput(outputs);
+    freeRKNNOutput(outputs, io_num.n_output);
 
     return;
 }

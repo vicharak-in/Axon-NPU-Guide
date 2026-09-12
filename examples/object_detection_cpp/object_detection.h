@@ -65,10 +65,12 @@ class ObjectDetection {
     std::condition_variable readCv, inferCv, postCv, streamCv, inputAttrCv;
 
     std::atomic<bool> stopFlag = false, stopPost = false, stopStream = false, inputAttrSet = false;
-    ThreadTimer inferT, postT, streamT;
 
+    // declared before the timers: members initialise in declaration order and the timers are sized from these
     size_t numInferenceWorkers = 3;
     size_t numPostprocessWorkers = 1;
+
+    ThreadTimer inferT, postT, streamT;
 
     const std::vector<std::pair<int, int>> skeleton; 
 
