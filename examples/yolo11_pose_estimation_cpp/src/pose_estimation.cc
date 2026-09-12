@@ -239,7 +239,7 @@ int process_fp32(float *input, int grid_h, int grid_w, int stride,
 
 rknn_output* getRKNNOutput(bool isQuant) {
     rknn_output* outputs = (rknn_output*)malloc(4 * sizeof(rknn_output));
-    memset(outputs, 0, sizeof(outputs));
+    memset(outputs, 0, 4 * sizeof(rknn_output));
     for (int i = 0; i < 4; i++) {
         outputs[i].index = i;
         outputs[i].want_float = !isQuant;
@@ -313,7 +313,7 @@ cv::Mat expand2square(const cv::Mat& img, const cv::Scalar& background_color) {
 }
 
 PoseEstimation::PoseEstimation(const std::string& modelPath_):modelPath(modelPath_), 
-                        modelSize(640, 640), ctx(0), inferT(3), postT(3), syncedQ(0, 50),
+                        modelSize(640, 640), ctx(0), inferT(numInferenceWorkers), postT(numPostprocessWorkers), syncedQ(0, 50),
                         skeleton{
                             {15, 13}, {13, 11}, {16, 14}, {14, 12}, {11, 12},
                             {5, 11}, {6, 12}, {5, 6}, {5, 7}, {6, 8},

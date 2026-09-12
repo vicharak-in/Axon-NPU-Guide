@@ -65,10 +65,12 @@ class PoseEstimation {
     std::condition_variable readCv, inferCv, postCv, streamCv;
 
     std::atomic<bool> stopFlag = false, stopPost = false, stopStream = false;
-    ThreadTimer inferT, postT;
 
+    // declared before the timers: members initialise in declaration order and the timers are sized from these
     size_t numInferenceWorkers = 3;
     size_t numPostprocessWorkers = 1;
+
+    ThreadTimer inferT, postT;
 
     const std::vector<std::pair<int, int>> skeleton; 
     std::vector<cv::Scalar> colours;
