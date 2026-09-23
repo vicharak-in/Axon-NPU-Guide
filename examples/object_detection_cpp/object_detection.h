@@ -66,7 +66,6 @@ class ObjectDetection {
 
     std::atomic<bool> stopFlag = false, stopPost = false, stopStream = false, inputAttrSet = false;
 
-    // declared before the timers: members initialise in declaration order and the timers are sized from these
     size_t numInferenceWorkers = 3;
     size_t numPostprocessWorkers = 1;
 
