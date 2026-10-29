@@ -1,8 +1,7 @@
 # Axon-NPU-Guide
-This repository contains guide on how to setup toolkits to use NPU present on Axon for running various AI/ML/DL models
+This repository contains guide on how to setup toolkits to use NPU present on Axon for running various AI/ML/DL models.
 
-
-To use NPU and other resources on axon at full capacity (or maximum frequencies) run the [max_freq.sh](https://github.com/vicharak-in/Axon-NPU-Guide/blob/main/max_freq.sh) script with sudo permissions as:  
+For maximum performance and sustained workloads, we recommend using the AXON Active Heatsink to ensure efficient thermal management and optimal performance. To use NPU and other resources on axon at full capacity (or maximum frequencies) run the [max_freq.sh](https://github.com/vicharak-in/Axon-NPU-Guide/blob/main/max_freq.sh) script with sudo permissions as:  
 ```bash
 sudo bash max_freq.sh
 ```
